@@ -1,0 +1,15 @@
+version: "3.3"
+
+services:
+  edgex-health-check:
+    image: edgex-health-check:latest
+    
+    deploy:
+      replicas: 3
+    env_file:
+      - config.env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
