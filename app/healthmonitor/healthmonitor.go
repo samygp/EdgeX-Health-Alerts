@@ -1,29 +1,45 @@
 package healthmonitor
 
 import (
-	"context"
-	"time"
-
-	"github.com/samygp/Edgex-Health-Alerts/config"
-	"github.com/samygp/Edgex-Health-Alerts/http"
+	ec "github.com/samygp/edgex-health-alerts/app/edgexconnector"
+	"github.com/samygp/edgex-health-alerts/app/healthmonitor/model"
+	"github.com/samygp/edgex-health-alerts/config"
+	"github.com/samygp/edgex-health-alerts/log"
 )
 
-//EdgeXConnector handles sending periodical GET requests
-//to EdgeX microservices, in order to monitor health of other
-//services, via the Consul API, and to Post events using
-//the device service API
-type EdgeXConnector struct {
-	client http.Client
+//HealthMonitor uses an EdgeXConnector to send messages
+//to the EdgeX consul service, in order to receive health
+//status for the running EdgeX services, and sends messages
+//to subscribe the export client that will receive core data
+//in order to report malfunctioning services
+type HealthMonitor struct {
+	connector  *ec.EdgeXConnector
+	components *model.EdgeXComponents
 }
 
-func (ec *EdgeXConnector) getRequest(urlString string, result interface{}) error {
-	ctx, cancelFunction := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Config.EdgeXConnector.TimeoutMS))
-	defer cancelFunction()
-	return ec.client.Get(ctx, urlString, http.WithResponse(result), http.WithStatusCode(http.StatusOK))
+//New instantiates a new health monitor
+func New() *HealthMonitor {
+	return &HealthMonitor{
+		connector: ec.New(),
+	}
 }
 
-func (ec *EdgeXConnector) postRequest(urlString string, body interface{}) error {
-	ctx, cancelFunction := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Config.EdgeXConnector.TimeoutMS))
-	defer cancelFunction()
-	return ec.client.Post(ctx, urlString, http.WithBody(body), http.WithStatusCode(http.StatusOK))
+//Start registers all the services required to export data to REST
+//endpoints and send events to Core Data
+func (monitor *HealthMonitor) Start() {
+	log.Logger.Info("Starting...")
+	monitor.registerAllComponents()
+}
+
+//Close removes all the subscribed components to EdgeX and stops monitoring
+//health of the services in the EdgeX consul service
+func (monitor *HealthMonitor) Close() {
+	log.Logger.Info("Closing...")
+	monitor.removeAllComponents()
+}
+
+func (monitor *HealthMonitor) queryConsul() model.ConsulStatusResponse {
+	var result model.ConsulStatusResponse
+	monitor.connector.GetRequest(ec.Consul, config.Config.EdgeXConnector.Consul.Health, true, &result)
+	return result
 }

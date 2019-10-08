@@ -1,0 +1,28 @@
+{
+  "app": {
+    "debug": true,
+    "name": "Health monitor"
+  },
+  "exportEndpoints": [
+    {
+      "address": "192.168.0.121",
+      "protocol": "HTTP",
+      "path": "sklzunsk",
+      "port": 8000,
+      "name": "requestBin"
+    },
+    {
+      "address": "dev69533.service-now.com",
+      "protocol": "HTTPS",
+      "path": "api/25688/edgex_incident_api/test",
+      "port": 443,
+      "name": "ServiceNow"
+    }
+  ],
+  "edgeXConnector": {
+    "edgeXEndpoint": "http://192.168.0.121"
+  },
+  "logger": {
+    "level": "debug"
+  }
+}

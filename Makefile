@@ -45,7 +45,7 @@ pi-build: ## Builds a dynamic executable or package
 .PROXY: run
 run: ## Execute built binary as web
 	@echo "+ $@"
-	@$(shell grep -v ^# config.env | xargs) ./$(NAME)
+	@ ./$(NAME)
 
 .PHONY: runmon
 runmon: restart ## Run executable and restart it if any changes are detected
@@ -54,7 +54,7 @@ runmon: restart ## Run executable and restart it if any changes are detected
 .PHONY: restart
 restart: kill local-build
 	@echo "+ $@"
-	@$(shell grep -v ^# config.env | xargs) ./$(NAME) &
+	@./$(NAME) &
 
 .PHONY: kill
 kill:

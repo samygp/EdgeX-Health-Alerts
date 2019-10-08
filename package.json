@@ -1,0 +1,11 @@
+{
+  "name": "edgex-health-alerts",
+  "version": "0.0.1",
+  "description": "Health monitoring service to alert when EdgeX services are down",
+  "license": "MIT",
+  "author": "Samuel <samuel@volteo.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samygp/edgex-health-alerts.git"
+  }
+}

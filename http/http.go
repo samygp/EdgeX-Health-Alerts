@@ -7,12 +7,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 
-	"bitbucket.org/volteo/image-monitor/fault"
-	"bitbucket.org/volteo/image-monitor/version"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"github.com/labstack/echo"
+	"github.com/samygp/edgex-health-alerts/fault"
+	"github.com/samygp/edgex-health-alerts/log"
+	"github.com/samygp/edgex-health-alerts/version"
 )
 
 const (
@@ -214,6 +216,7 @@ func (c *client) do(ctx context.Context, url, method string, opts ...Option) err
 		}
 	}
 
+	fmt.Printf("Processing %s request to: %s\n", req.Method, req.URL)
 	res, err := c.client.Do(req)
 	if err != nil {
 		return err
@@ -226,29 +229,25 @@ func (c *client) do(ctx context.Context, url, method string, opts ...Option) err
 		}
 	}()
 
-	if res.StatusCode != opt.statusCode {
-		return c.toError(res.Body, res.StatusCode)
-	}
-
 	if opt.response != nil {
-
-		if err := json.NewDecoder(res.Body).Decode(opt.response); err != nil {
-			return err
+		if err := json.NewDecoder(reader).Decode(opt.response); err != nil {
+			if responseData, err := ioutil.ReadAll(res.Body); err != nil {
+				log.Logger.Errorf("Error parsing response body: %s", err.Error())
+			} else {
+				opt.response = string(responseData)
+				log.Logger.Debugf("Response: %s", opt.response)
+			}
+		} else {
+			log.Logger.Debugf("Response: %#v", opt.response)
 		}
 	}
 
+	if res.StatusCode != opt.statusCode {
+		if s, ok := statusCodeToStatus[res.StatusCode]; ok {
+			return fault.New(s, UnexpectedStatusCode, "Unexpected status code %d", res.StatusCode)
+		}
+		return fault.New(fault.Unknown, UnexpectedStatusCode, "Unexpected status code %d", res.StatusCode)
+	}
+
 	return nil
-}
-
-func (c *client) toError(reader io.Reader, statusCode int) error {
-	payload := &errPayload{}
-	if err := json.NewDecoder(reader).Decode(&payload); err != nil {
-		return err
-	}
-
-	if s, ok := statusCodeToStatus[statusCode]; ok {
-		return fault.New(s, payload.Error.Message, payload.Error.Detail)
-	}
-
-	return fault.New(fault.Unknown, UnexpectedStatusCode, "Unexpected status code %d", statusCode)
 }

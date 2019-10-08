@@ -5,9 +5,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"bitbucket.org/volteo/image-monitor/log"
 	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/labstack/echo"
+	"github.com/samygp/edgex-health-alerts/log"
 )
 
 type (

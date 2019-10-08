@@ -14,7 +14,7 @@ RUN set -x \
     ca-certificates \
   && echo "Installed OS deps."
 
-WORKDIR /go/src/github.com/samygp/Edgex-Health-Alerts
+WORKDIR /go/src/github.com/samygp/edgex-health-alerts
 COPY Makefile package.json ./
 ENV GO111MODULE on
 RUN go mod init
@@ -25,14 +25,14 @@ RUN set -x \
 COPY . .
 RUN set -x \
   && make static \
-  && mv Edgex-Health-Alerts /usr/local/bin/ \
+  && mv edgex-health-alerts /usr/local/bin/ \
   && echo "Build App."
 
 FROM alpine:3.10
 
 LABEL maintainer="Sam <soysamygp@gmail.com>"
 
-COPY --from=builder /usr/local/bin/Edgex-Health-Alerts /usr/local/bin/
+COPY --from=builder /usr/local/bin/edgex-health-alerts /usr/local/bin/
 COPY --from=builder /etc/ssl/certs/ /etc/ssl/certs
 
-ENTRYPOINT ["Edgex-Health-Alerts"]
+ENTRYPOINT ["edgex-health-alerts"]

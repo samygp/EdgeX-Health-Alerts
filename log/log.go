@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"bitbucket.org/volteo/image-monitor/config"
-	"bitbucket.org/volteo/image-monitor/version"
+	"github.com/samygp/edgex-health-alerts/config"
+	"github.com/samygp/edgex-health-alerts/version"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
