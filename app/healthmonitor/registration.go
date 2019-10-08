@@ -30,6 +30,7 @@ func (monitor *HealthMonitor) removeComponent(clientID, path, componentName stri
 	if monitor.componentExists(clientID, path, componentName) {
 		if err := monitor.connector.DeleteRequest(clientID, fmt.Sprintf("%s/name/%s", path, componentName)); err != nil {
 			log.Logger.Errorf("Error while deleting %s from %s: %s", componentName, clientID, err.Error())
+			return
 		}
 	} else {
 		log.Logger.Infof("Deleted %s from %s", componentName, clientID)
@@ -77,23 +78,25 @@ func (monitor *HealthMonitor) registerAllComponents() {
 
 func (monitor *HealthMonitor) removeAllComponents() {
 	c := &config.Config.EdgeXConnector
-	//register Device Profile
-	monitor.removeComponent(ec.MetaData, c.MetaData.DeviceProfile, monitor.components.DeviceProfile.Name)
 
-	//register default addressable
-	monitor.removeComponent(ec.MetaData, c.MetaData.Addressable, monitor.components.DefaultAddressable.Name)
-
-	//register Device Service
-	monitor.removeComponent(ec.MetaData, c.MetaData.DeviceService, monitor.components.DeviceService.Name)
-
-	//register Device
-	monitor.removeComponent(ec.MetaData, c.MetaData.Device, monitor.components.Device.Name)
-
-	//register Value Descriptor
-	monitor.removeComponent(ec.CoreData, c.CoreData.ValueDescriptor, monitor.components.ValueDescriptor.Name)
-
-	//register export clients
+	//remove export clients
 	for _, client := range monitor.components.ExportClients {
 		monitor.removeComponent(ec.ExportClient, c.ExportClient.Registration, client.Name)
 	}
+
+	//remove Device
+	monitor.removeComponent(ec.MetaData, c.MetaData.Device, monitor.components.Device.Name)
+
+	//remove Device Service
+	monitor.removeComponent(ec.MetaData, c.MetaData.DeviceService, monitor.components.DeviceService.Name)
+
+	//remove default addressable
+	monitor.removeComponent(ec.MetaData, c.MetaData.Addressable, monitor.components.DefaultAddressable.Name)
+
+	//remove Device Profile
+	monitor.removeComponent(ec.MetaData, c.MetaData.DeviceProfile, monitor.components.DeviceProfile.Name)
+
+	//remove Value Descriptor
+	monitor.removeComponent(ec.CoreData, c.CoreData.ValueDescriptor, monitor.components.ValueDescriptor.Name)
+
 }

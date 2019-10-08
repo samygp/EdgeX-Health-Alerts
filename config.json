@@ -1,7 +1,7 @@
 {
   "app": {
     "debug": true,
-    "name": "Health monitor"
+    "name": "HealthMonitor"
   },
   "exportEndpoints": [
     {
